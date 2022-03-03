@@ -12,7 +12,8 @@ def send_clk_and_data(clk=True, data=True):
     clk_msg.add_arg(clk)
     data_msg = osc_message_builder.OscMessageBuilder(address="/avatar/parameters/MyParameter_DATA")
     data_msg.add_arg(data)
-    bundle.add_content(clk.build())
+    bundle.add_content(clk_msg.build())
+    bundle.add_content(data_msg.build())
     client.send(bundle.build())
 
 
