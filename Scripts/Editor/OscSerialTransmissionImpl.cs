@@ -58,7 +58,6 @@ namespace Hai.OscSerialTransmission.Scripts.Editor
         private static void CreateSerialLayer(AacFlBase aac, Components.OscSerialTransmission my)
         {
             var serial = aac.CreateSupportingFxLayer("Serial");
-            var clock = serial.BoolParameter(my.clockParameter);
             var syncParam = serial.BoolParameter(ClockHasChangedParam);
             var clockHasChanged = syncParam.IsTrue();
             var data = serial.BoolParameter(my.dataParameter);
@@ -76,7 +75,7 @@ namespace Hai.OscSerialTransmission.Scripts.Editor
             // Begin communication.
             var beginComms = serial.NewState("Synchronization (ALPHA)").RightOf()
                 .Drives(messageBufferAlpha, 0);
-            idle.TransitionsTo(beginComms).When(clockHasChanged).And(clock.IsFalse()).And(data.IsFalse());
+            idle.TransitionsTo(beginComms).When(clockHasChanged).And(data.IsFalse());
 
             var maximumRepresentableNumber = Mathf.Pow(2, my.numberOfBitsPerMessage) - 1;
 
@@ -93,22 +92,24 @@ namespace Hai.OscSerialTransmission.Scripts.Editor
 
                 foreach (var previous in previousMutable)
                 {
-                    var clockStateForThisBit = i % 2 == 0;
-                    previous.TransitionsTo(low).When(clockHasChanged).And(clock.IsEqualTo(clockStateForThisBit)).And(data.IsTrue());
-                    previous.TransitionsTo(high).When(clockHasChanged).And(clock.IsEqualTo(clockStateForThisBit)).And(data.IsFalse());
+                    previous.TransitionsTo(low).When(clockHasChanged).And(data.IsTrue());
+                    previous.TransitionsTo(high).When(clockHasChanged).And(data.IsFalse());
                 }
 
                 // Must be last statement in this loop
                 previousMutable = new[] {low, high};
             }
 
-            var stop = serial.NewState("Stop (ALPHA)").RightOf();
+            var parityBit = serial.NewState("Parity (IGNORED)").RightOf();
             foreach (var mostSignificantBit in previousMutable)
             {
-                mostSignificantBit.TransitionsTo(stop).When(clockHasChanged).And(data.IsTrue());
+                mostSignificantBit.TransitionsTo(parityBit).When(clockHasChanged);
             }
 
-            stop.TransitionsTo(beginComms).When(clockHasChanged).And(clock.IsFalse()).And(data.IsFalse());
+            var stop = serial.NewState("Stop (ALPHA)").RightOf();
+            parityBit.TransitionsTo(stop).When(clockHasChanged).And(data.IsTrue());
+
+            stop.TransitionsTo(beginComms).When(clockHasChanged).And(data.IsFalse());
         }
     }
 }
