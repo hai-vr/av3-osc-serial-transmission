@@ -1,4 +1,5 @@
-﻿using UnityEditor.Animations;
+﻿#if UNITY_EDITOR
+using UnityEditor.Animations;
 using UnityEngine;
 using VRC.SDK3.Avatars.Components;
 
@@ -14,5 +15,8 @@ namespace Hai.OscSerialTransmission.Scripts.Components
         public string dataParameter;
         public int numberOfBitsPerMessage;
         public string normalizedOutputParam;
+        public string dataVizParameter;
+        public string clockVizParameter;
     }
 }
+#endif
