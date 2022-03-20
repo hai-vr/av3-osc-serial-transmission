@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using AnimatorAsCode.V0;
 using AnimatorAsCodeFramework.Examples;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -26,10 +25,8 @@ namespace Hai.OscSerialTransmission.Scripts.Components
     }
 
     [CustomEditor(typeof(OscSerialDemo), true)]
-    public class OscSerialDemoImpl : UnityEditor.Editor
+    public class OscSerialDemoImpl : Editor
     {
-        private const string ClockHasChangedParam = "SERIAL_SYNC";
-
         public override void OnInspectorGUI()
         {
             AacExample.InspectorTemplate(this, serializedObject, "assetKey", Create);

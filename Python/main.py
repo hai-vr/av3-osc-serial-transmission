@@ -101,7 +101,6 @@ async def loop():
 
 async def serve_server():
     server = AsyncIOOSCUDPServer(("127.0.0.1", 9200), dispatcher, asyncio.get_event_loop())
-    # print("Serving on {}".format(server.server_address))
     transport, protocol = await server.create_serve_endpoint()
     await loop()
 
