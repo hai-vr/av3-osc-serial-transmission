@@ -1,6 +1,8 @@
 from pythonosc import osc_bundle_builder
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
+from pythonosc.osc_server import AsyncIOOSCUDPServer
+from pythonosc.dispatcher import Dispatcher
 import asyncio
 import sys
 
@@ -22,7 +24,7 @@ def send_clk_and_data(clk=True, data=True, why=""):
 
 # TODO: This could have been just a simple bool array or something
 def serial_message(data_to_transmit: int):
-    number_of_bits = 16
+    number_of_bits = 8
     # data_to_transmit = 6 * 60 + 45  # The time is 6:45
 
     yield True  # Idle
@@ -57,6 +59,11 @@ class SerialComms:
                 self.message_pushed_event.set_result(True)
                 self.state = self.IDLE
 
+    def try_push_message(self, message):
+        if self.state != self.IDLE:
+            return asyncio.get_running_loop().create_future().done()
+        return asyncio.create_task(self.push_message(message))
+
     async def push_message(self, message):
         self.msg = message
         self.state = self.QUEUED
@@ -78,11 +85,34 @@ async def user_input():
         await serial.push_message(int(line))
 
 
+def prep_dispatch(address, *args):
+    msg = args[0]
+    print(f"Trying to push {msg}")
+    serial.try_push_message(msg)
+
+
+dispatcher = Dispatcher()
+dispatcher.map("/avatar/parameters/HeartRateInt", prep_dispatch)
+
+
+async def loop():
+    while True:
+        await asyncio.sleep(1)
+
+async def serve_server():
+    server = AsyncIOOSCUDPServer(("127.0.0.1", 9200), dispatcher, asyncio.get_event_loop())
+    # print("Serving on {}".format(server.server_address))
+    transport, protocol = await server.create_serve_endpoint()
+    await loop()
+
+
 async def main():
     task = asyncio.create_task(serial.clk_routine(1 / 4))
     task2 = asyncio.create_task(user_input())
+    task3 = asyncio.create_task(serve_server())
     await task
     await task2
+    await task3
 
 
 asyncio.run(main())
