@@ -2,6 +2,8 @@
 WIP 🚧 POC Arbitrarily large data transmission over 1 Bool with synchronous serial communication for Avatars 3.0 OSC. Designed for transmission of low update rate data (weather, heart rate, local time, etc.).
 
 TODO:
+- Solve permanent desync
+  - When data is updated continuously, there's a chance the receiver side won't be able to figure out the beginning of a message. This needs to be solved
 - Allow multiple data streams
   - Extend python script to handle an arbitrary amount of bit streams
   - Split CLK and animator
