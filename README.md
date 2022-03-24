@@ -15,3 +15,5 @@ TODO:
 - Allow transmission of data across more than 1 data line
   - Extend animator to allow transmission of data across more than 1 data line
   - Extend python script to allow transmission of data across more than 1 data line
+- Detect culling
+  - Extend animator to ignore incoming packets when the animator has recently been culled
